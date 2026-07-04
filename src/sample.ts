@@ -33,9 +33,8 @@ function formatCourse(name: string, units: number, semester: string): string {
 return `${name} (${units} units) - ${semester}`;
 }
 
-const user: User = getUser(1); // User -- typed with the User interface; holds the returned student object
+const user: User = getUser(1); // User -- typed with the User interface; holds the returned user object
 const grade: Grade = calculateGrade(user.score!, 100); // Grade -- typed with the Grade interface; holds score and letter
 console.log(user);
-console.log(grade);          // { score: 95.5, letter: 'A' }
-console.log(grade.letter);   // 'A' -- the letter field from the Grade interface
+console.log(grade.letter);   // The letter field from the Grade interface
 console.log(formatCourse("IT Elective 4", 3, "1st Semester"));
