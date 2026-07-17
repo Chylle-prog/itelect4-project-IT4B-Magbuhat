@@ -58,15 +58,6 @@ data: T;
 message?: string;
 }
 
-// ===== GENERIC FUNCTIONS =====
-function getFirst<T>(items: T[]): T | undefined {
-return items[0];
-}
-
-function getById<T extends { id: number }>(items: T[], id: number): T | undefined {
-return items.find((item) => item.id === id);
-}
-
 // ===== UTILITY TYPES =====
 export type UserUpdate = Partial<User>;
 export type ItemSummary = Pick<LostFoundItem, "id" | "title" | "status">;
@@ -78,6 +69,3 @@ enum ClaimDecision {
 Approved = "approved",
 Rejected = "rejected",
 }
-
-// Keep the enum referenced so it is part of the demo and compiles cleanly.
-const sampleDecision: ClaimDecision = ClaimDecision.Approved;
