@@ -1,4 +1,5 @@
 import type { ApiResponse, User } from "../types/index";
+import { ClaimDecision, ClaimStatus } from "../types/index";
 
 interface LostFoundItem {
 id: number;
@@ -18,16 +19,9 @@ id: number;
 itemId: number;
 claimantUserId: number;
 notes: string;
-status: ClaimStatus;
+status: ClaimStatus | ClaimDecision;
 verifiedByUserId?: number;
 createdAt: Date;
-}
-
-enum ClaimStatus {
-Pending = "pending",
-Verified = "verified",
-Rejected = "rejected",
-Released = "released",
 }
 
 type ItemSummary = Pick<LostFoundItem, "id" | "title" | "status">;
@@ -55,14 +49,6 @@ status,
 location,
 postedByUserId,
 createdAt: new Date(),
-};
-}
-
-function reviewClaim(claim: Claim, verifierUserId: number, status: ClaimStatus): Claim {
-return {
-...claim,
-status,
-verifiedByUserId: verifierUserId,
 };
 }
 
@@ -94,8 +80,6 @@ success: true,
 data: claims,
 };
 
-const reviewedClaim = reviewClaim(claims[0]!, 2, ClaimStatus.Verified);
-
 const lostItems = items.filter((item) => item.status === "lost");
 const lostItemSummaries: ItemSummary[] = lostItems.map((item) => ({
 id: item.id,
@@ -116,6 +100,7 @@ const claimant = getById(users, claim.claimantUserId);
 return {
 claimantName: claimant?.name ?? "Unknown user",
 itemId: claim.itemId,
+notes: claim.notes,
 reviewStatus: claim.status,
 };
 });
@@ -128,10 +113,16 @@ const itemStatusCount: ItemStatusCount = items.reduce(
 { lost: 0, found: 0 }
 );
 
+console.log("====== CAMPUS LOST & FOUND TRACKER APP =====");
 console.log("Total amount of items:", itemResponse.data.length);
 console.log(itemStatusCount);
+console.log("");
+console.log("====== LOST ITEMS =====");
 console.log("Lost items currently in storage:", lostItemSummaries);
+console.log("");
+console.log("====== LIST OF CLAIMS =====");
 console.log("Total amount of claims:", claimResponse.data.length);
-console.log("Found items:", foundItemSummaries);
 console.log("Claim review summaries:", claimReviewSummaries);
-console.log(reviewedClaim.status);
+console.log("");
+console.log("====== FOUND ITEMS =====");
+console.log("Found items:", foundItemSummaries);

@@ -7,26 +7,6 @@ isActive: boolean;
 score?: number;
 }
 
-export interface Course {
-name: string;
-units: number;
-semester: string;
-}
-
-export interface Submission {
-id: number;
-studentId: number;
-courseCode: string;
-repoUrl: string;
-submittedAt: Date;
-score?: number;
-}
-
-export interface Grade {
-score: number;
-letter: "A" | "B" | "C" | "F";
-}
-
 // ===== APP TYPES =====
 export interface LostFoundItem {
 id: number;
@@ -65,7 +45,14 @@ export type PublicClaim = Omit<Claim, "verifiedByUserId">;
 export type ItemStatusCount = Record<LostFoundItem["status"], number>;
 
 // ===== ENUMS =====
-enum ClaimDecision {
+export enum ClaimStatus {
+Pending = "pending",
+Verified = "verified",
+Rejected = "rejected",
+Released = "released",
+}
+
+export enum ClaimDecision {
 Approved = "approved",
 Rejected = "rejected",
 }
