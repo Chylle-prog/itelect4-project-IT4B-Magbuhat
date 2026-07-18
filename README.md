@@ -16,7 +16,7 @@ Core data models:
 ## Run
 
 ```bash
-npx ts-node src/sample.ts
+npx ts-node src/index.ts
 ```
 
 ## Type Check
