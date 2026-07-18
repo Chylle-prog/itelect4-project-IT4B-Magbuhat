@@ -3,18 +3,14 @@ import type { User } from "../types/index";
 
 interface UserCardProps {
   user: User;
+  isSelected: boolean;
   onSelect: (user: User) => void;
 }
 
-function UserCard({ user, onSelect }: UserCardProps) {
+function UserCard({ user, isSelected, onSelect }: UserCardProps) {
   // typed onClick event handler
   const handleClick = (_e: React.MouseEvent<HTMLButtonElement>): void => {
     onSelect(user);
-  };
-
-  // typed onChange event handler
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    console.log("Search:", e.target.value);
   };
 
   return (
@@ -25,9 +21,11 @@ function UserCard({ user, onSelect }: UserCardProps) {
       {user.score !== undefined && (
         <p className="user-score">Score: {user.score}</p>
       )}
+      <p className="selection-state">
+        {isSelected ? 'This user is selected' : 'This user is not selected'}
+      </p>
       <div className="card-actions">
-        <button onClick={handleClick}>Select User</button>
-        <input onChange={handleSearch} placeholder="Search users..." />
+        <button onClick={handleClick}>{isSelected ? 'Selected' : 'Select User'}</button>
       </div>
     </div>
   );

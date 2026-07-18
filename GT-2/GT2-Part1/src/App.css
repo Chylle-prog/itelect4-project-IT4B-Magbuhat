@@ -6,6 +6,61 @@
   gap: 20px;
 }
 
+.row-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-nav button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.row-nav span {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-row button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.filter-active {
+  border-color: var(--accent-border) !important;
+  background: var(--accent-bg) !important;
+  color: var(--accent) !important;
+}
+
+.search-row {
+  display: flex;
+}
+
+.search-row input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 0.95rem;
+}
+
 /* ===== Shared card base ===== */
 .user-card,
 .item-card,
@@ -95,14 +150,31 @@
   cursor: pointer;
 }
 
+.item-status {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-h);
+}
+
 /* ===== ClaimBadge ===== */
 .claim-notes {
   margin: 8px 0 6px;
   font-size: 0.95rem;
 }
 
+.claim-user {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-h);
+}
+
 .claim-verified {
   font-size: 0.82rem;
+  color: var(--text);
+}
+
+.claim-empty {
+  margin: 0 0 6px;
   color: var(--text);
 }
 
