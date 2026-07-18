@@ -65,7 +65,7 @@ createItem(103, "Silver ID Lace", "Campus ID lace with silver clip", "Accessorie
 ];
 
 const claims: Claim[] = [
-{ id: 201, itemId: 102, claimantUserId: 1, notes: "The handle has a small crack.", status: ClaimStatus.Pending, createdAt: new Date() },
+{ id: 201, itemId: 102, claimantUserId: 1, notes: "The handle has a small crack.", status: ClaimStatus.Rejected, createdAt: new Date() },
 { id: 202, itemId: 101, claimantUserId: 3, notes: "Wallet has my student card inside.", status: ClaimStatus.Pending, createdAt: new Date() },
 ];
 
