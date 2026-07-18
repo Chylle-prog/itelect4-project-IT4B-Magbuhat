@@ -44,15 +44,17 @@ export type ItemSummary = Pick<LostFoundItem, "id" | "title" | "status">;
 export type PublicClaim = Omit<Claim, "verifiedByUserId">;
 export type ItemStatusCount = Record<LostFoundItem["status"], number>;
 
-// ===== ENUMS =====
-export enum ClaimStatus {
-Pending = "pending",
-Verified = "verified",
-Rejected = "rejected",
-Released = "released",
-}
+// ===== ENUMS (as const objects — compatible with erasableSyntaxOnly) =====
+export const ClaimStatus = {
+  Pending: "pending",
+  Verified: "verified",
+  Rejected: "rejected",
+  Released: "released",
+} as const;
+export type ClaimStatus = (typeof ClaimStatus)[keyof typeof ClaimStatus];
 
-export enum ClaimDecision {
-Approved = "approved",
-Rejected = "rejected",
-}
+export const ClaimDecision = {
+  Approved: "approved",
+  Rejected: "rejected",
+} as const;
+export type ClaimDecision = (typeof ClaimDecision)[keyof typeof ClaimDecision];
