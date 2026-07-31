@@ -49,6 +49,7 @@
 
 .search-row {
   display: flex;
+  gap: 10px;
 }
 
 .search-row input {
@@ -59,6 +60,21 @@
   background: var(--bg);
   color: var(--text-h);
   font-size: 0.95rem;
+}
+
+.details-panel {
+  border: 1px dashed var(--accent-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--accent-bg);
+}
+
+.details-panel h3 {
+  margin: 0 0 8px;
+}
+
+.details-panel p {
+  margin: 6px 0;
 }
 
 /* ===== Shared card base ===== */

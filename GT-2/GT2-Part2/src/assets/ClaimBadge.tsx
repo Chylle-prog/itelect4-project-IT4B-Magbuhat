@@ -4,6 +4,7 @@ import type { Claim } from "../types/index";
 interface ClaimBadgeProps {
   claim: Claim | null;
   claimantName?: string;
+  itemName?: string;
   onAccept?: () => void;
   onReject?: () => void;
   children?: React.ReactNode;
@@ -12,6 +13,7 @@ interface ClaimBadgeProps {
 const ClaimBadge: React.FC<ClaimBadgeProps> = ({
   claim,
   claimantName,
+  itemName,
   onAccept,
   onReject,
   children,
@@ -36,6 +38,9 @@ const ClaimBadge: React.FC<ClaimBadgeProps> = ({
             <span className={`badge badge-${claim.status}`}>{claim.status}</span>
             <span className="claim-item">Item #{claim.itemId}</span>
           </div>
+          <p className="claim-user">
+            Item: {itemName ?? `Item ${claim.itemId}`}
+          </p>
           <p className="claim-user">
             Claimant: {claimantName ?? `User ${claim.claimantUserId}`}
           </p>

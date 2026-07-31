@@ -141,11 +141,18 @@ function App() {
   })
 
   const activeItem = filteredItems[activeItemIndex] ?? null
-  const activeClaim = selectedUserId
-    ? claims.find((claim) => claim.claimantUserId === selectedUserId) ?? null
+  const claimContextUserId = activeUser?.id ?? selectedUserId ?? null
+  const activeClaim = claimContextUserId
+    ? claims.find((claim) => claim.claimantUserId === claimContextUserId) ?? null
     : null
   const claimantUser = activeClaim
     ? users.find((user) => user.id === activeClaim.claimantUserId) ?? null
+    : null
+  const claimedItem = activeClaim
+    ? items.find((item) => item.id === activeClaim.itemId) ?? null
+    : null
+  const activeItemName = activeClaim
+    ? claimedItem?.title ?? `Item ${activeClaim.itemId}`
     : null
 
   const showPrevUser = (): void => {
@@ -294,6 +301,8 @@ function App() {
         />
         <button
           type="button"
+          aria-expanded={showDetails}
+          aria-controls="details-panel"
           onClick={toggleDetails}
         >
           {showDetails ? 'Hide' : 'Show'} Details
@@ -304,25 +313,49 @@ function App() {
         <span>{filteredUsers.length === 0 ? '0 / 0' : `${activeUserIndex + 1} / ${filteredUsers.length}`}</span>
         <button type="button" onClick={showNextUser}>Next User</button>
       </div>
-      {activeUser ? (
-        <UserCard
-          key={activeUser.id}
-          user={activeUser}
-          isSelected={selectedUserId === activeUser.id}
-          onSelect={(u) => setSelectedUserId(u.id)}
-        />
+      {showDetails ? (
+        <section id="details-panel" className="details-panel" aria-live="polite">
+          <h3>Live Details</h3>
+          <p>
+            <strong>Current User:</strong>{' '}
+            {activeUser ? `${activeUser.name} (${activeUser.role})` : 'None selected'}
+          </p>
+          <p>
+            <strong>Claimed Item:</strong>{' '}
+            {activeClaim
+              ? `${activeItemName ?? `Item ${activeClaim.itemId}`} - ${claimedItem?.status ?? 'status unavailable'}`
+              : 'No claim for current user'}
+          </p>
+          <p>
+            <strong>Current Claim:</strong>{' '}
+            {activeClaim ? `${activeClaim.status} for ${activeItemName ?? `Item ${activeClaim.itemId}`}` : 'No claim for current user'}
+          </p>
+          <p className="app-feedback">Use this panel to quickly verify what your actions will update.</p>
+        </section>
       ) : (
-        <p className="app-feedback">No users match your search.</p>
-      )}
+        <>
+          {activeUser ? (
+            <UserCard
+              key={activeUser.id}
+              user={activeUser}
+              isSelected={selectedUserId === activeUser.id}
+              onSelect={(u) => setSelectedUserId(u.id)}
+            />
+          ) : (
+            <p className="app-feedback">No users match your search.</p>
+          )}
 
-      <ClaimBadge
-        claim={activeClaim}
-        claimantName={claimantUser?.name}
-        onAccept={acceptClaim}
-        onReject={rejectClaim}
-      >
-        <p>Use Accept or Reject to update the selected user's claim.</p>
-      </ClaimBadge>
+          <ClaimBadge
+            claim={activeClaim}
+            claimantName={claimantUser?.name}
+            itemName={activeItemName ?? undefined}
+            onAccept={acceptClaim}
+            onReject={rejectClaim}
+          >
+            <p>Use Accept or Reject to update the selected user's claim.</p>
+          </ClaimBadge>
+        </>
+      )}
     </div>
   )
 }
