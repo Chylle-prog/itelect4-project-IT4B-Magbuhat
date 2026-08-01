@@ -114,6 +114,12 @@ function App() {
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    if (!isLoading) {
+      searchInputRef.current?.focus()
+    }
+  }, [isLoading])
+
   // Typed onChange handler with React.ChangeEvent<HTMLInputElement>
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchValue(e.target.value)
