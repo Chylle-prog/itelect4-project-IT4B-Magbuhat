@@ -141,18 +141,33 @@ function App() {
   })
 
   const activeItem = filteredItems[activeItemIndex] ?? null
-  const claimContextUserId = activeUser?.id ?? selectedUserId ?? null
-  const activeClaim = claimContextUserId
-    ? claims.find((claim) => claim.claimantUserId === claimContextUserId) ?? null
+
+  // Live details should follow the currently navigated user.
+  const activeUserClaim = activeUser
+    ? claims.find((claim) => claim.claimantUserId === activeUser.id) ?? null
     : null
-  const claimantUser = activeClaim
-    ? users.find((user) => user.id === activeClaim.claimantUserId) ?? null
+
+  // Claim badge should follow the explicitly selected user.
+  const selectedUserClaim = selectedUserId
+    ? claims.find((claim) => claim.claimantUserId === selectedUserId) ?? null
     : null
-  const claimedItem = activeClaim
-    ? items.find((item) => item.id === activeClaim.itemId) ?? null
+
+  const selectedClaimantUser = selectedUserClaim
+    ? users.find((user) => user.id === selectedUserClaim.claimantUserId) ?? null
     : null
-  const activeItemName = activeClaim
-    ? claimedItem?.title ?? `Item ${activeClaim.itemId}`
+
+  const activeClaimedItem = activeUserClaim
+    ? items.find((item) => item.id === activeUserClaim.itemId) ?? null
+    : null
+  const selectedClaimedItem = selectedUserClaim
+    ? items.find((item) => item.id === selectedUserClaim.itemId) ?? null
+    : null
+
+  const activeClaimItemName = activeUserClaim
+    ? activeClaimedItem?.title ?? `Item ${activeUserClaim.itemId}`
+    : null
+  const selectedClaimItemName = selectedUserClaim
+    ? selectedClaimedItem?.title ?? `Item ${selectedUserClaim.itemId}`
     : null
 
   const showPrevUser = (): void => {
@@ -192,11 +207,11 @@ function App() {
   }
 
   const acceptClaim = (): void => {
-    if (!activeClaim) {
+    if (!selectedUserClaim) {
       return
     }
 
-    const nextClaim: Claim = { ...activeClaim, status: 'approved' }
+    const nextClaim: Claim = { ...selectedUserClaim, status: 'approved' }
     setClaims((prevClaims) =>
       prevClaims.map((claim) => (claim.id === nextClaim.id ? nextClaim : claim))
     )
@@ -210,11 +225,11 @@ function App() {
   }
 
   const rejectClaim = (): void => {
-    if (!activeClaim) {
+    if (!selectedUserClaim) {
       return
     }
 
-    const nextClaim: Claim = { ...activeClaim, status: 'rejected' }
+    const nextClaim: Claim = { ...selectedUserClaim, status: 'rejected' }
     setClaims((prevClaims) =>
       prevClaims.map((claim) => (claim.id === nextClaim.id ? nextClaim : claim))
     )
@@ -322,13 +337,13 @@ function App() {
           </p>
           <p>
             <strong>Claimed Item:</strong>{' '}
-            {activeClaim
-              ? `${activeItemName ?? `Item ${activeClaim.itemId}`} - ${claimedItem?.status ?? 'status unavailable'}`
+            {activeUserClaim
+              ? `${activeClaimItemName ?? `Item ${activeUserClaim.itemId}`} - ${activeClaimedItem?.status ?? 'status unavailable'}`
               : 'No claim for current user'}
           </p>
           <p>
             <strong>Current Claim:</strong>{' '}
-            {activeClaim ? `${activeClaim.status} for ${activeItemName ?? `Item ${activeClaim.itemId}`}` : 'No claim for current user'}
+            {activeUserClaim ? `${activeUserClaim.status} for ${activeClaimItemName ?? `Item ${activeUserClaim.itemId}`}` : 'No claim for current user'}
           </p>
           <p className="app-feedback">Use this panel to quickly verify what your actions will update.</p>
         </section>
@@ -346,9 +361,9 @@ function App() {
           )}
 
           <ClaimBadge
-            claim={activeClaim}
-            claimantName={claimantUser?.name}
-            itemName={activeItemName ?? undefined}
+            claim={selectedUserClaim}
+            claimantName={selectedClaimantUser?.name}
+            itemName={selectedClaimItemName ?? undefined}
             onAccept={acceptClaim}
             onReject={rejectClaim}
           >
