@@ -1,6 +1,5 @@
 // src/App.tsx
 import { useState, useEffect, useRef } from 'react'
-import './App.css'
 import type { User, LostFoundItem, Claim } from './types/index'
 import UserCard from './assets/UserCard'
 import ItemCard from './assets/ItemCard'
@@ -85,8 +84,8 @@ const initialClaims: Claim[] = [
 ]
 
 function App() {
-  // useState<T> - Multiple pieces of state with explicit types
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isError, setIsError] = useState<boolean>(false)
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
   const [searchValue, setSearchValue] = useState<string>('')
   const [users, setUsers] = useState<User[]>([])
@@ -96,20 +95,24 @@ function App() {
   const [activeItemIndex, setActiveItemIndex] = useState(0)
   const [itemFilter, setItemFilter] = useState<'all' | LostFoundItem['status']>('all')
 
-  // useRef for DOM reference
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  // Custom hooks with explicit return types
+  const [isDarkMode, toggleDarkMode] = useToggle(false)
   const [showDetails, toggleDetails] = useToggle(false)
   const previousSearch = usePrevious(searchValue)
 
-  // useEffect to load mock data on mount
   useEffect(() => {
     const timer = setTimeout(() => {
-      setUsers(initialUsers)
-      setItems(initialItems)
-      setClaims(initialClaims)
-      setIsLoading(false)
+      try {
+        setUsers(initialUsers)
+        setItems(initialItems)
+        setClaims(initialClaims)
+        setIsError(false)
+      } catch {
+        setIsError(true)
+      } finally {
+        setIsLoading(false)
+      }
     }, 500)
     return () => clearTimeout(timer)
   }, [])
@@ -120,10 +123,27 @@ function App() {
     }
   }, [isLoading])
 
-  // Typed onChange handler with React.ChangeEvent<HTMLInputElement>
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchValue(e.target.value)
     setActiveUserIndex(0)
+  }
+
+  const handleClearSearch = (): void => {
+    setSearchValue('')
+    setActiveUserIndex(0)
+    searchInputRef.current?.focus()
+  }
+
+  const handleRetry = (): void => {
+    setIsLoading(true)
+    setIsError(false)
+    const timer = setTimeout(() => {
+      setUsers(initialUsers)
+      setItems(initialItems)
+      setClaims(initialClaims)
+      setIsLoading(false)
+    }, 500)
+    window.setTimeout(() => clearTimeout(timer), 900)
   }
 
   const filteredUsers = users.filter((user) => {
@@ -249,134 +269,250 @@ function App() {
   }
 
   if (isLoading) {
-    return <p className="app-feedback">Loading data...</p>
+    return (
+      <div className={isDarkMode ? 'dark' : ''}>
+        <div className="min-h-screen bg-white p-6 dark:bg-[#16171d]">
+        <div className="mx-auto max-w-3xl animate-pulse rounded-xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          Loading data...
+        </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className={isDarkMode ? 'dark' : ''}>
+        <div className="min-h-screen bg-white p-6 dark:bg-[#16171d]">
+          <div className="mx-auto max-w-3xl space-y-4 rounded-xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+            <p>Could not load data. Please try again.</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleRetry}
+                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700"
+              >
+                Retry
+              </button>
+              <button
+                type="button"
+                onClick={toggleDarkMode}
+                className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100 dark:border-red-800 dark:text-red-200 dark:hover:bg-red-900/40"
+              >
+                {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="app">
-      <h1>Lost & Found</h1>
-      <p className="app-feedback">Total users loaded: {users.length}</p>
-      <p className="app-feedback">Total items loaded: {items.length}</p>
-      {previousSearch !== undefined && previousSearch !== searchValue && (
-        <p className="app-feedback">Previous search: "{previousSearch}"</p>
-      )}
+    <div className={isDarkMode ? 'dark' : ''}>
+      <div className="min-h-screen bg-white text-slate-800 dark:bg-[#16171d] dark:text-slate-100">
+        <div className="mx-auto max-w-6xl space-y-6 p-6">
+          <header className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Lost & Found</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-300">Interactive dashboard for users, items, and claims.</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={toggleDarkMode}
+                className="rounded-md bg-slate-800 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-900 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white"
+              >
+                {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsError(true)}
+                className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-200 dark:hover:bg-red-900/60"
+              >
+                Simulate Error
+              </button>
+            </div>
+          </header>
 
-      <h2>Items (from GT1 Part 2)</h2>
-      <div className="filter-row" role="group" aria-label="Item status filters">
-        <button
-          type="button"
-          className={itemFilter === 'all' ? 'filter-active' : ''}
-          onClick={() => {
-            setItemFilter('all')
-            setActiveItemIndex(0)
-          }}
-        >
-          All
-        </button>
-        <button
-          type="button"
-          className={itemFilter === 'lost' ? 'filter-active' : ''}
-          onClick={() => {
-            setItemFilter('lost')
-            setActiveItemIndex(0)
-          }}
-        >
-          Lost
-        </button>
-        <button
-          type="button"
-          className={itemFilter === 'found' ? 'filter-active' : ''}
-          onClick={() => {
-            setItemFilter('found')
-            setActiveItemIndex(0)
-          }}
-        >
-          Found
-        </button>
-      </div>
-      <div className="row-nav">
-        <button type="button" onClick={showPrevItem}>Previous Item</button>
-        <span>
-          {filteredItems.length === 0
-            ? '0 / 0'
-            : `${activeItemIndex + 1} / ${filteredItems.length}`}
-        </span>
-        <button type="button" onClick={showNextItem}>Next Item</button>
-      </div>
-      {activeItem ? (
-        <ItemCard
-          key={activeItem.id}
-          item={activeItem}
-        />
-      ) : (
-        <p className="app-feedback">No items match the selected filter.</p>
-      )}
+          <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                ref={searchInputRef}
+                value={searchValue}
+                onChange={handleSearchChange}
+                placeholder="Search users by name, email, or role"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none dark:border-slate-600 dark:bg-slate-900"
+              />
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                aria-expanded={showDetails}
+                aria-controls="details-panel"
+                onClick={toggleDetails}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+              >
+                {showDetails ? 'Hide' : 'Show'} Details
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <span>Total users: {users.length}</span>
+              <span>Total items: {items.length}</span>
+              {previousSearch !== undefined && previousSearch !== searchValue && (
+                <span>Previous search: "{previousSearch}"</span>
+              )}
+            </div>
+          </section>
 
-      <h2>Users (from GT1 Part 2)</h2>
-      <div className="search-row">
-        <input
-          ref={searchInputRef}
-          value={searchValue}
-          onChange={handleSearchChange}
-          placeholder="Search users..."
-        />
-        <button
-          type="button"
-          aria-expanded={showDetails}
-          aria-controls="details-panel"
-          onClick={toggleDetails}
-        >
-          {showDetails ? 'Hide' : 'Show'} Details
-        </button>
-      </div>
-      <div className="row-nav">
-        <button type="button" onClick={showPrevUser}>Previous User</button>
-        <span>{filteredUsers.length === 0 ? '0 / 0' : `${activeUserIndex + 1} / ${filteredUsers.length}`}</span>
-        <button type="button" onClick={showNextUser}>Next User</button>
-      </div>
-      {showDetails ? (
-        <section id="details-panel" className="details-panel" aria-live="polite">
-          <h3>Live Details</h3>
-          <p>
-            <strong>Current User:</strong>{' '}
-            {activeUser ? `${activeUser.name} (${activeUser.role})` : 'None selected'}
-          </p>
-          <p>
-            <strong>Claimed Item:</strong>{' '}
-            {activeUserClaim
-              ? `${activeClaimItemName ?? `Item ${activeUserClaim.itemId}`} - ${activeClaimedItem?.status ?? 'status unavailable'}`
-              : 'No claim for current user'}
-          </p>
-          <p>
-            <strong>Current Claim:</strong>{' '}
-            {activeUserClaim ? `${activeUserClaim.status} for ${activeClaimItemName ?? `Item ${activeUserClaim.itemId}`}` : 'No claim for current user'}
-          </p>
-          <p className="app-feedback">Use this panel to quickly verify what your actions will update.</p>
-        </section>
-      ) : (
-        <>
-          {activeUser ? (
-            <UserCard
-              key={activeUser.id}
-              user={activeUser}
-              isSelected={selectedUserId === activeUser.id}
-              onSelect={(u) => setSelectedUserId(u.id)}
-            />
-          ) : (
-            <p className="app-feedback">No users match your search.</p>
-          )}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Items</h2>
+                <span className="text-xs text-slate-500 dark:text-slate-300">
+                  {filteredItems.length === 0 ? '0 / 0' : `${activeItemIndex + 1} / ${filteredItems.length}`}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${itemFilter === 'all' ? 'border-sky-600 bg-sky-100 text-sky-700 dark:border-sky-400 dark:bg-sky-900/40 dark:text-sky-200' : 'border-slate-300 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700'}`}
+                  onClick={() => {
+                    setItemFilter('all')
+                    setActiveItemIndex(0)
+                  }}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${itemFilter === 'lost' ? 'border-amber-600 bg-amber-100 text-amber-700 dark:border-amber-400 dark:bg-amber-900/40 dark:text-amber-200' : 'border-slate-300 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700'}`}
+                  onClick={() => {
+                    setItemFilter('lost')
+                    setActiveItemIndex(0)
+                  }}
+                >
+                  Lost
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${itemFilter === 'found' ? 'border-emerald-600 bg-emerald-100 text-emerald-700 dark:border-emerald-400 dark:bg-emerald-900/40 dark:text-emerald-200' : 'border-slate-300 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700'}`}
+                  onClick={() => {
+                    setItemFilter('found')
+                    setActiveItemIndex(0)
+                  }}
+                >
+                  Found
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={showPrevItem}
+                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextItem}
+                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  Next
+                </button>
+              </div>
+              {activeItem ? (
+                <ItemCard
+                  key={activeItem.id}
+                  item={activeItem}
+                  variant={showDetails ? 'default' : 'compact'}
+                />
+              ) : (
+                <p className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-600 dark:border-slate-600 dark:text-slate-300">
+                  No items match the selected filter.
+                </p>
+              )}
+            </section>
 
-          <ClaimBadge
-            claim={selectedUserClaim}
-            claimantName={selectedClaimantUser?.name}
-            itemName={selectedClaimItemName ?? undefined}
-            onAccept={acceptClaim}
-            onReject={rejectClaim}
-          >
-            <p>Use Accept or Reject to update the selected user's claim.</p>
-          </ClaimBadge>
-        </>
-      )}
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Users</h2>
+                <span className="text-xs text-slate-500 dark:text-slate-300">
+                  {filteredUsers.length === 0 ? '0 / 0' : `${activeUserIndex + 1} / ${filteredUsers.length}`}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={showPrevUser}
+                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextUser}
+                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  Next
+                </button>
+              </div>
+              {activeUser ? (
+                <UserCard
+                  key={activeUser.id}
+                  user={activeUser}
+                  isSelected={selectedUserId === activeUser.id}
+                  onSelect={(u) => setSelectedUserId(u.id)}
+                />
+              ) : (
+                <p className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-600 dark:border-slate-600 dark:text-slate-300">
+                  No users match your search.
+                </p>
+              )}
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold">Claim Action</h2>
+              <ClaimBadge
+                claim={selectedUserClaim}
+                claimantName={selectedClaimantUser?.name}
+                itemName={selectedClaimItemName ?? undefined}
+                onAccept={acceptClaim}
+                onReject={rejectClaim}
+                showDetails={showDetails}
+              >
+                <p className="text-xs text-slate-600 dark:text-slate-300">Use Accept or Reject to process this claim.</p>
+              </ClaimBadge>
+            </section>
+
+            {showDetails && (
+              <section
+                id="details-panel"
+                className="space-y-2 rounded-xl border border-sky-200 bg-sky-50 p-4 text-left dark:border-sky-900/40 dark:bg-sky-950/30 lg:col-span-3"
+                aria-live="polite"
+              >
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Live Details</h3>
+                <p className="text-sm text-slate-700 dark:text-slate-200">
+                  Current User: {activeUser ? `${activeUser.name} (${activeUser.role})` : 'None selected'}
+                </p>
+                <p className="text-sm text-slate-700 dark:text-slate-200">
+                  Claimed Item: {activeUserClaim
+                    ? `${activeClaimItemName ?? `Item ${activeUserClaim.itemId}`} - ${activeClaimedItem?.status ?? 'status unavailable'}`
+                    : 'No claim for current user'}
+                </p>
+                <p className="text-sm text-slate-700 dark:text-slate-200">
+                  Current Claim: {activeUserClaim
+                    ? `${activeUserClaim.status} for ${activeClaimItemName ?? `Item ${activeUserClaim.itemId}`}`
+                    : 'No claim for current user'}
+                </p>
+              </section>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
