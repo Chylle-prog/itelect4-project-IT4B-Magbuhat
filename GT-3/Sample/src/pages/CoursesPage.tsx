@@ -1,65 +1,69 @@
-import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router"; // <-- NEW
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
 import type { Course } from "../types/index";
 import CourseCard from "../assets/CourseCard";
 import usePrevious from "../hooks/usePrevious";
-import { allCourses } from "../data/mockData"; // <-- NEW
+import useUiStore from "../store/uiStore";
+import { fetchCourses } from "../api/client";
+
 function CoursesPage() {
-// All six of these moved from Session 5's App.tsx, unchanged
-const [courses, setCourses] = useState<Course[]>([]);
-const [isLoading, setIsLoading] = useState<boolean>(true);
-const [isError, setIsError] = useState<boolean>(false);
-const [searchTerm, setSearchTerm] = useState<string>("");
-const searchInputRef = useRef<HTMLInputElement>(null);
-const previousSearch = usePrevious(searchTerm);
-useEffect(() => {
-setTimeout(() => {
-setCourses(allCourses); // <-- was setCourses([course])
-setIsLoading(false);
-}, 500);
-}, []);
-const handleSearchChange = (
-e: React.ChangeEvent<HTMLInputElement>
-): void => setSearchTerm(e.target.value);
-// Matches the CODE as well as the title -- typing ITELECT has to work
-const filteredCourses = courses.filter((c) =>
-c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-c.code.toLowerCase().includes(searchTerm.toLowerCase())
-);
-if (isLoading) {
-return <div className="animate-pulse p-6">Loading courses...</div>;
+  // These four lines replace ALL of Session 6's fetching state
+  const { data, isPending, isError, error } = useQuery<Course[]>({
+    queryKey: ["courses"],
+    queryFn: fetchCourses,
+  });
+
+  // The search box now reads and writes the store, not local state
+  const searchTerm = useUiStore((state) => state.searchTerm);
+  const setSearchTerm = useUiStore((state) => state.setSearchTerm);
+  const previousSearch = usePrevious(searchTerm);
+
+  const handleSearchChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void => setSearchTerm(e.target.value);
+
+  // Below this line data is Course[], never undefined -- the two
+  // returns above ruled the other cases out, and TypeScript followed.
+  const filteredCourses = (data as Course[]).filter((c: Course) =>
+    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isPending) {
+    return <div className="animate-pulse p-6">Loading courses...</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-lg bg-red-50 p-4 text-red-700">
+        {error.message} -- is json-server running on port 3001?
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Courses</h2>
+      <input
+        value={searchTerm}
+        onChange={handleSearchChange}
+        placeholder="Search courses..."
+        className="w-full rounded border border-gray-300 p-2"
+      />
+      {previousSearch !== undefined && previousSearch !== searchTerm && (
+        <p className="mt-1 text-sm text-gray-500">
+          Previous search: "{previousSearch}"
+        </p>
+      )}
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredCourses.map((c: Course) => (
+          <Link key={c.code} to={`/courses/${c.code}`}>
+            <CourseCard course={c} />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 }
-if (isError) {
-return (
-<div className="rounded-lg bg-red-50 p-4 text-red-700">
-Could not load courses.
-</div>
-);
-}
-return (
-<div>
-<h2 className="mb-4 text-2xl font-bold text-gray-900
-dark:text-white">Courses</h2>
-<button onClick={() => setIsError(true)}
-className="mb-2 rounded bg-red-100 px-2 py-1 text-xs text-red-700">
-Simulate Error
-</button>
-<input ref={searchInputRef} value={searchTerm}
-onChange={handleSearchChange} placeholder="Search courses..."
-className="w-full rounded border border-gray-300 p-2" />
-{previousSearch !== undefined && previousSearch !== searchTerm && (
-<p className="mt-1 text-sm text-gray-500">
-Previous search: "{previousSearch}"</p>
-)}
-<div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2
-lg:grid-cols-3">
-{filteredCourses.map((c) => (
-<Link key={c.code} to={`/courses/${c.code}`}> {/* <-- NEW */}
-<CourseCard course={c} />
-</Link>
-))}
-</div>
-</div>
-);
-}
+
 export default CoursesPage;

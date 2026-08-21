@@ -85,3 +85,17 @@ export type RoleCount = Record<
 "student" | "admin" | "instructor",
 number
 >;
+
+// JSON has no Date, and json-server writes ids as strings. So what the
+// API hands back is NOT the Submission shape you declared in Session 1.
+// Both types below are DERIVED from it, so Submission stays the single
+// source of truth -- add a field there and these two inherit it.
+
+// Omit is from Session 2. The & intersection is from Session 1.
+export type ApiSubmission = Omit<Submission, "id" | "submittedAt"> & {
+  id: string;           // json-server ids look like "z40Jv8oq06g"
+  submittedAt: string;  // an ISO string, never a Date object
+};
+
+// What we SEND when creating one. No id yet -- the server makes it.
+export type NewSubmission = Omit<ApiSubmission, "id">;
