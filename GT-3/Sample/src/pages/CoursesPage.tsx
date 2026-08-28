@@ -5,6 +5,7 @@ import CourseCard from "../assets/CourseCard";
 import usePrevious from "../hooks/usePrevious";
 import useUiStore from "../store/uiStore";
 import { fetchCourses } from "../api/client";
+import { Input } from "@/components/ui/input";
 
 function CoursesPage() {
   // These four lines replace ALL of Session 6's fetching state
@@ -44,11 +45,11 @@ function CoursesPage() {
   return (
     <div>
       <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Courses</h2>
-      <input
+      <Input
         value={searchTerm}
         onChange={handleSearchChange}
         placeholder="Search courses..."
-        className="w-full rounded border border-gray-300 p-2"
+        className="max-w-sm"
       />
       {previousSearch !== undefined && previousSearch !== searchTerm && (
         <p className="mt-1 text-sm text-gray-500">

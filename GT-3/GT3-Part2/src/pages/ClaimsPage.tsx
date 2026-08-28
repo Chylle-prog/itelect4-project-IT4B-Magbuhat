@@ -11,6 +11,8 @@ function ClaimsPage() {
   const usersQuery = useQuery<User[]>({ queryKey: ['users'], queryFn: fetchUsers })
   const [activeClaimIndex, setActiveClaimIndex] = useState(0)
   const [claimNotes, setClaimNotes] = useState('')
+  const [claimMode, setClaimMode] = useState<'submit' | 'review'>('review')
+  const [submitItemId, setSubmitItemId] = useState<number | null>(null)
   const [decisions, setDecisions] = useState<Record<number, Claim['status']>>({})
   const navigate = useNavigate()
   const location = useLocation()
@@ -27,6 +29,7 @@ function ClaimsPage() {
   const item = activeClaim
     ? items.find((entry) => entry.id === activeClaim.itemId) ?? null
     : null
+  const submitItem = items.find((entry) => entry.id === submitItemId) ?? null
   const displayedClaim = activeClaim
     ? { ...activeClaim, status: decisions[activeClaim.id] ?? activeClaim.status }
     : null
@@ -62,12 +65,12 @@ function ClaimsPage() {
   }
 
   const handleAddClaim = (): void => {
-    if (!item || claimNotes.trim().length === 0) {
+    if (!submitItem || claimNotes.trim().length === 0) {
       return
     }
 
     addClaim.mutate({
-      itemId: String(item.id),
+      itemId: String(submitItem.id),
       claimantUserId: String(currentUserId ?? 1),
       notes: claimNotes.trim(),
       status: 'pending',
@@ -98,69 +101,96 @@ function ClaimsPage() {
         </p>
       )}
 
-      <div className="max-w-xl space-y-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-        <label htmlFor="claim-notes" className="text-sm font-semibold">Submit evidence for the current item</label>
-        <textarea
-          id="claim-notes"
-          value={claimNotes}
-          onChange={(event) => setClaimNotes(event.target.value)}
-          placeholder="Explain why this item belongs to you"
-          className="w-full rounded-md border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
-        />
-        <button
-          type="button"
-          onClick={handleAddClaim}
-          disabled={item === null || claimNotes.trim().length === 0 || addClaim.isPending}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-        >
-          {addClaim.isPending ? 'Submitting...' : 'Submit Claim'}
-        </button>
-        {addClaim.isError && <p className="text-sm text-red-700">{addClaim.error.message}</p>}
-        {addClaim.isSuccess && <p className="text-sm text-emerald-700">Claim submitted and list refreshed.</p>}
-      </div>
-
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={showPrevClaim}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+          onClick={() => setClaimMode((mode) => mode === 'submit' ? 'review' : 'submit')}
+          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
         >
-          Prev
+          {claimMode === 'submit' ? 'Switch to Review Claims' : 'Switch to Submit Claim'}
         </button>
-        <button
-          type="button"
-          onClick={showNextClaim}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
-        >
-          Next
-        </button>
-        {item && (
-          <button
-            type="button"
-            onClick={() => navigate(`/items/${item.id}`)}
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-          >
-            Open Item Detail
-          </button>
-        )}
       </div>
 
-      <div className="max-w-xl">
-        <ClaimBadge
-          claim={displayedClaim}
-          claimantName={claimant?.name}
-          itemName={item?.title}
-          onAccept={() => updateClaim('approved')}
-          onReject={() => updateClaim('rejected')}
-          showDetails
-        >
-          {item && (
-            <p className="text-xs text-slate-500 dark:text-slate-300">
-              Item status updates immediately when claim is accepted or rejected.
-            </p>
-          )}
-        </ClaimBadge>
-      </div>
+      {claimMode === 'submit' ? (
+        <div className="max-w-xl space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <label htmlFor="claim-item" className="text-sm font-semibold">Item to claim</label>
+          <select
+            id="claim-item"
+            value={submitItemId ?? ''}
+            onChange={(event) => setSubmitItemId(event.target.value ? Number(event.target.value) : null)}
+            className="w-full rounded-md border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+          >
+            <option value="">Choose an item</option>
+            {items.map((availableItem) => (
+              <option key={availableItem.id} value={availableItem.id}>
+                {availableItem.title} ({availableItem.status})
+              </option>
+            ))}
+          </select>
+          <textarea
+            id="claim-notes"
+            value={claimNotes}
+            onChange={(event) => setClaimNotes(event.target.value)}
+            placeholder="Explain why this item belongs to you"
+            className="w-full rounded-md border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+          />
+          <button
+            type="button"
+            onClick={handleAddClaim}
+            disabled={submitItem === null || claimNotes.trim().length === 0 || addClaim.isPending}
+            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          >
+            {addClaim.isPending ? 'Submitting...' : 'Submit Claim'}
+          </button>
+          {addClaim.isError && <p className="text-sm text-red-700">{addClaim.error.message}</p>}
+          {addClaim.isSuccess && <p className="text-sm text-emerald-700">Claim submitted and list refreshed.</p>}
+        </div>
+      ) : (
+        <>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={showPrevClaim}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              onClick={showNextClaim}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+            >
+              Next
+            </button>
+            {item && (
+              <button
+                type="button"
+                onClick={() => navigate(`/items/${item.id}`)}
+                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                Open Item Detail
+              </button>
+            )}
+          </div>
+
+          <div className="max-w-xl">
+            <ClaimBadge
+              claim={displayedClaim}
+              claimantName={claimant?.name}
+              itemName={item?.title}
+              onAccept={() => updateClaim('approved')}
+              onReject={() => updateClaim('rejected')}
+              showDetails
+            >
+              {item && (
+                <p className="text-xs text-slate-500 dark:text-slate-300">
+                  Item status updates immediately when claim is accepted or rejected.
+                </p>
+              )}
+            </ClaimBadge>
+          </div>
+        </>
+      )}
     </section>
   )
 }

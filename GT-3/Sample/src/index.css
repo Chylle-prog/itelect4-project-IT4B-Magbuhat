@@ -1,2 +1,17 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	--foreground: oklch(0.145 0 0);
+	--background: oklch(1 0 0);
+}
+
+.dark {
+	--foreground: oklch(0.985 0 0);
+	--background: oklch(0.145 0 0);
+}
+
+@theme inline {
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+}
