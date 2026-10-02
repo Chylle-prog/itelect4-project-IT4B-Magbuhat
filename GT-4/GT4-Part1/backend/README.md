@@ -9,6 +9,8 @@ This is the Session 9 Node, Express, MongoDB, and JWT backend for the lost-and-f
 3. Copy `.env.example` to `.env`, set `MONGODB_URI` to the Atlas URI (with a database name such as `gt4_lost_found`), and set `JWT_SECRET` to a private random value.
 4. Run `npm run dev`. The API listens on port 4000 after MongoDB connects.
 
+If Node reports `querySrv ECONNREFUSED` for the Atlas hostname, set `DNS_SERVERS=8.8.8.8,8.8.4.4` in `.env` and restart. This optional setting overrides DNS servers for MongoDB SRV lookups.
+
 `npm run build` type-checks and compiles the server to `dist/`; `npm start` runs the compiled server. Never commit `.env`.
 
 ## Routes
