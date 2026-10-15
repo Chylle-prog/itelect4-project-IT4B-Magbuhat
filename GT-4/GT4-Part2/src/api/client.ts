@@ -27,7 +27,7 @@ async function getJson<T>(path: string): Promise<T> {
 }
 
 function toUser(user: ApiUser): User {
-  return { ...user, id: Number(user.id) }
+  return user
 }
 
 function toItem(item: ApiLostFoundItem): LostFoundItem {
@@ -40,15 +40,12 @@ function toItem(item: ApiLostFoundItem): LostFoundItem {
 function toClaim(claim: ApiClaim): Claim {
   return {
     ...claim,
-    id: Number(claim.id),
-    itemId: Number(claim.itemId),
-    claimantUserId: Number(claim.claimantUserId),
     createdAt: new Date(claim.createdAt),
   }
 }
 
 export async function fetchUsers(): Promise<User[]> {
-  const users = await getJson<ApiUser[]>('/users')
+  const users = await getJson<ApiUser[]>('/api/users')
   return users.map(toUser)
 }
 
@@ -63,7 +60,7 @@ export async function fetchItemById(id: string): Promise<LostFoundItem> {
 }
 
 export async function fetchClaims(): Promise<Claim[]> {
-  const claims = await getJson<ApiClaim[]>('/claims')
+  const claims = await getJson<ApiClaim[]>('/api/claims')
   return claims.map(toClaim)
 }
 
@@ -74,8 +71,26 @@ export async function createClaim(claim: NewClaim): Promise<Claim> {
     body: JSON.stringify(claim),
   })
   if (!saved.ok) {
-    throw new Error('Could not create claim')
+    const result = (await saved.json().catch(() => null)) as { message?: string } | null
+    throw new Error(result?.message ?? 'Could not create claim')
   }
   const data = (await saved.json()) as ApiClaim
   return toClaim(data)
+}
+
+export async function updateClaimStatus(
+  id: string,
+  status: Extract<Claim['status'], 'approved' | 'rejected'>,
+): Promise<Claim> {
+  const response = await fetch(`${API_URL}/api/claims/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ status }),
+  })
+  if (!response.ok) {
+    const result = (await response.json().catch(() => null)) as { message?: string } | null
+    throw new Error(result?.message ?? 'Could not update claim')
+  }
+
+  return toClaim((await response.json()) as ApiClaim)
 }

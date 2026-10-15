@@ -43,6 +43,16 @@ export type LostFoundItemDoc = Omit<
   verifiedByUserId?: Types.ObjectId
 }
 
+export interface ClaimDoc {
+  itemId: Types.ObjectId
+  claimantUserId: Types.ObjectId
+  notes: string
+  status: 'pending' | 'approved' | 'rejected'
+  verifiedByUserId?: Types.ObjectId
+  createdAt: Date
+  updatedAt: Date
+}
+
 export type NewLostFoundItemBody = Pick<
   LostFoundItem,
   'title' | 'description' | 'category' | 'status' | 'location'

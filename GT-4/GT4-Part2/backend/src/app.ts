@@ -5,8 +5,10 @@ import express, {
 } from 'express'
 import mongoose from 'mongoose'
 import { connectDB } from './config/db.js'
+import { claimRouter } from './routes/claims.js'
 import { authRouter } from './routes/auth.js'
 import { itemRouter } from './routes/items.js'
+import { userRouter } from './routes/users.js'
 
 const app = express()
 
@@ -26,7 +28,9 @@ app.get('/api/health', (_req: Request, res: Response) => {
 })
 
 app.use('/api/auth', authRouter)
+app.use('/api/users', userRouter)
 app.use('/api/items', itemRouter)
+app.use('/api/claims', claimRouter)
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: `No route for ${req.method} ${req.originalUrl}` })

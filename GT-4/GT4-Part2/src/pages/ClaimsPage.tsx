@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocation, useNavigate } from 'react-router'
 import ClaimBadge from '../assets/ClaimBadge'
-import { createClaim, fetchClaims, fetchItems, fetchUsers } from '../api/client'
+import { createClaim, fetchClaims, fetchItems, fetchUsers, updateClaimStatus } from '../api/client'
 import { claimSchema, type ClaimFormValues } from '../schemas/claimSchema'
 import type { Claim, LostFoundItem, NewClaim, User } from '../types/index'
 import { Button } from '@/components/ui/button'
@@ -17,11 +17,10 @@ function ClaimsPage() {
   const usersQuery = useQuery<User[]>({ queryKey: ['users'], queryFn: fetchUsers })
   const [activeClaimIndex, setActiveClaimIndex] = useState(0)
   const [claimMode, setClaimMode] = useState<'submit' | 'review'>('review')
-  const [decisions, setDecisions] = useState<Record<number, Claim['status']>>({})
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
-  const currentUserId = (location.state as { userId?: number | null } | null)?.userId ?? null
+  const currentUserId = (location.state as { userId?: string | null } | null)?.userId ?? null
   const {
     register,
     handleSubmit,
@@ -34,7 +33,9 @@ function ClaimsPage() {
     defaultValues: { itemId: '', notes: '' },
   })
 
-  const claims = claimsQuery.data ?? []
+  const claims = (claimsQuery.data ?? []).filter(
+    (claim) => currentUserId === null || claim.claimantUserId === currentUserId,
+  )
   const items = itemsQuery.data ?? []
   const users = usersQuery.data ?? []
   const activeClaim = claims[activeClaimIndex] ?? null
@@ -42,19 +43,25 @@ function ClaimsPage() {
     ? users.find((user) => user.id === activeClaim.claimantUserId) ?? null
     : null
   const item = activeClaim
-    ? items.find((entry) => entry.id === String(activeClaim.itemId)) ?? null
+    ? items.find((entry) => entry.id === activeClaim.itemId) ?? null
     : null
   const submitItemId = watch('itemId')
   const submitItem = items.find((entry) => entry.id === submitItemId) ?? null
   const displayedClaim = activeClaim
-    ? { ...activeClaim, status: decisions[activeClaim.id] ?? activeClaim.status }
-    : null
 
   const addClaim = useMutation<Claim, Error, NewClaim>({
     mutationFn: createClaim,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['claims'] })
       reset()
+    },
+  })
+
+  const reviewClaim = useMutation<Claim, Error, { id: string; status: 'approved' | 'rejected' }>({
+    mutationFn: ({ id, status }) => updateClaimStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['claims'] })
+      queryClient.invalidateQueries({ queryKey: ['items'] })
     },
   })
 
@@ -77,17 +84,13 @@ function ClaimsPage() {
       return
     }
 
-    setDecisions((previous) => ({ ...previous, [activeClaim.id]: status }))
+    if (status === 'approved' || status === 'rejected') {
+      reviewClaim.mutate({ id: activeClaim.id, status })
+    }
   }
 
   const onSubmit = (values: ClaimFormValues): void => {
-    addClaim.mutate({
-      itemId: values.itemId,
-      claimantUserId: String(currentUserId ?? 1),
-      notes: values.notes.trim(),
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    })
+    addClaim.mutate({ itemId: values.itemId, notes: values.notes.trim() })
   }
 
   if (claimsQuery.isPending || itemsQuery.isPending || usersQuery.isPending) {
@@ -107,7 +110,7 @@ function ClaimsPage() {
         </span>
       </div>
 
-      {currentUserId !== null && (
+          {currentUserId !== null && (
         <p className="text-sm text-slate-600 dark:text-slate-300">
           Showing the claim context for user #{currentUserId} first.
         </p>
@@ -201,6 +204,7 @@ function ClaimsPage() {
                 </p>
               )}
             </ClaimBadge>
+            {reviewClaim.isError && <p className="mt-2 text-sm text-red-700">{reviewClaim.error.message}</p>}
           </div>
         </>
       )}

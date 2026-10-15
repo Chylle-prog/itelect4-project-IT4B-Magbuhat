@@ -1,5 +1,5 @@
 export interface User {
-id: number;
+id: string;
 name: string;
 email: string;
 role: "student" | "admin" | "instructor";
@@ -22,12 +22,12 @@ createdAt: Date;
 }
 
 export interface Claim {
-id: number;
-itemId: number;
-claimantUserId: number;
+id: string;
+itemId: string;
+claimantUserId: string;
 notes: string;
 status: "pending" | "approved" | "rejected";
-verifiedByUserId?: number;
+verifiedByUserId?: string;
 createdAt: Date;
 }
 
@@ -50,14 +50,11 @@ export type ApiLostFoundItem = Omit<LostFoundItem, "id" | "postedByUserId" | "cr
   postedByUserId: string;
   createdAt: string;
 };
-export type ApiClaim = Omit<Claim, "id" | "itemId" | "claimantUserId" | "createdAt"> & {
-  id: string;
-  itemId: string;
-  claimantUserId: string;
+export type ApiClaim = Omit<Claim, "createdAt"> & {
   createdAt: string;
 };
 
-export type NewClaim = Omit<ApiClaim, "id">;
+export type NewClaim = Pick<Claim, "itemId" | "notes">;
 
 // ===== ENUMS (as const objects — compatible with erasableSyntaxOnly) =====
 export const ClaimStatus = {
