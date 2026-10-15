@@ -9,15 +9,15 @@ score?: number;
 
 // ===== APP TYPES =====
 export interface LostFoundItem {
-id: number;
+id: string;
 title: string;
 description: string;
 category: string;
 status: "lost" | "found";
 location: string;
-postedByUserId: number;
-claimedByUserId?: number;
-verifiedByUserId?: number;
+postedByUserId: string;
+claimedByUserId?: string;
+verifiedByUserId?: string;
 createdAt: Date;
 }
 

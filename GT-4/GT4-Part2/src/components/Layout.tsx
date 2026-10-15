@@ -22,9 +22,7 @@ function Layout() {
             Lost & Found Router App
           </span>
           <NavLink to="/" end className={linkClass}>Home</NavLink>
-          <NavLink to="/users" className={linkClass}>Users</NavLink>
           <NavLink to="/items" className={linkClass}>Items</NavLink>
-          <NavLink to="/claims" className={linkClass}>Claims</NavLink>
           {userName === null ? (
             <NavLink to="/login" className={linkClass}>Login</NavLink>
           ) : (

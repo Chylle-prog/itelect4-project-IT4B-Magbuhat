@@ -42,10 +42,10 @@ function ClaimsPage() {
     ? users.find((user) => user.id === activeClaim.claimantUserId) ?? null
     : null
   const item = activeClaim
-    ? items.find((entry) => entry.id === activeClaim.itemId) ?? null
+    ? items.find((entry) => entry.id === String(activeClaim.itemId)) ?? null
     : null
   const submitItemId = watch('itemId')
-  const submitItem = items.find((entry) => entry.id === Number(submitItemId)) ?? null
+  const submitItem = items.find((entry) => entry.id === submitItemId) ?? null
   const displayedClaim = activeClaim
     ? { ...activeClaim, status: decisions[activeClaim.id] ?? activeClaim.status }
     : null

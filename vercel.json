@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "gt4-part2-frontend": {
+      "root": "GT-4/GT4-Part2",
+      "framework": "vite"
+    },
+    "gt4-part2-api": {
+      "root": "GT-4/GT4-Part2/backend",
+      "framework": "express",
+      "entrypoint": "src/app.ts"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": { "service": "gt4-part2-api" }
+    },
+    {
+      "source": "/(.*)",
+      "destination": { "service": "gt4-part2-frontend" }
+    }
+  ]
+}

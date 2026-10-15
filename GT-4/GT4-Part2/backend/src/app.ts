@@ -3,33 +3,23 @@ import express, {
   type Request,
   type Response,
 } from 'express'
-import cors from 'cors'
 import mongoose from 'mongoose'
+import { connectDB } from './config/db.js'
 import { authRouter } from './routes/auth.js'
 import { itemRouter } from './routes/items.js'
 
 export const app = express()
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  ...(process.env.FRONTEND_ORIGINS?.split(',').map((origin) => origin.trim()).filter(Boolean) ?? []),
-]
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true)
-        return
-      }
-
-      callback(new Error(`Origin ${origin} is not allowed by CORS`))
-    },
-    credentials: true,
-  }),
-)
 app.use(express.json())
+
+app.use(async (_req: Request, _res: Response, next: NextFunction) => {
+  try {
+    await connectDB()
+    next()
+  } catch (error) {
+    next(error)
+  }
+})
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 })

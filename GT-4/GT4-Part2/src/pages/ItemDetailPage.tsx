@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 import ItemCard from '../assets/ItemCard'
-import { fetchClaims, fetchItemById, fetchUsers } from '../api/client'
-import type { Claim, User } from '../types/index'
+import { fetchItemById } from '../api/client'
 
 function ItemDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -12,18 +11,16 @@ function ItemDetailPage() {
     queryFn: () => fetchItemById(id ?? ''),
     enabled: id !== undefined,
   })
-  const claimsQuery = useQuery<Claim[], Error>({ queryKey: ['claims'], queryFn: fetchClaims })
-  const usersQuery = useQuery<User[], Error>({ queryKey: ['users'], queryFn: fetchUsers })
   const item = itemQuery.data
 
-  if (itemQuery.isPending || claimsQuery.isPending || usersQuery.isPending) {
+  if (itemQuery.isPending) {
     return <div className="animate-pulse rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">Loading item details...</div>
   }
 
-  if (itemQuery.isError || claimsQuery.isError || usersQuery.isError || item === undefined) {
+  if (itemQuery.isError || item === undefined) {
     return (
       <div className="space-y-3 rounded-xl border border-red-200 bg-red-50 p-5 text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
-        <p>Could not load item "{id}". Check that `npm run api` is running.</p>
+        <p>Could not load item "{id}". Please log in again and retry.</p>
         <button
           type="button"
           onClick={() => navigate('/items')}
@@ -35,31 +32,11 @@ function ItemDetailPage() {
     )
   }
 
-  const relatedClaims = claimsQuery.data.filter((claim) => claim.itemId === item.id)
-
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-bold">Item Detail</h1>
       <div className="max-w-xl">
         <ItemCard item={item} />
-      </div>
-
-      <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
-          Related Claims
-        </h2>
-        {relatedClaims.length === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-300">No claims yet for this item.</p>
-        ) : (
-          relatedClaims.map((claim) => {
-            const claimant = usersQuery.data.find((user) => user.id === claim.claimantUserId)
-            return (
-              <p key={claim.id} className="text-sm text-slate-700 dark:text-slate-200">
-                Claim #{claim.id}: {claim.status} by {claimant?.name ?? `User ${claim.claimantUserId}`}
-              </p>
-            )
-          })
-        )}
       </div>
 
       <button

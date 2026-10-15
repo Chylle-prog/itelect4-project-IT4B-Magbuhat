@@ -7,15 +7,19 @@ import type {
   NewClaim,
   User,
 } from '../types/index'
+import useAuthStore from '../store/authStore'
 
 export const API_URL = (
-  import.meta.env.VITE_API_URL ??
-  import.meta.env.VITE_AUTH_API_URL ??
-  'http://localhost:4000'
+  import.meta.env.VITE_API_URL ?? ''
 ).replace(/\/$/, '')
 
+function getAuthHeaders(): HeadersInit {
+  const token = useAuthStore.getState().token
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 async function getJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`)
+  const response = await fetch(`${API_URL}${path}`, { headers: getAuthHeaders() })
   if (!response.ok) {
     throw new Error(`Request failed: ${response.status}`)
   }
@@ -29,8 +33,6 @@ function toUser(user: ApiUser): User {
 function toItem(item: ApiLostFoundItem): LostFoundItem {
   return {
     ...item,
-    id: Number(item.id),
-    postedByUserId: Number(item.postedByUserId),
     createdAt: new Date(item.createdAt),
   }
 }
@@ -51,12 +53,12 @@ export async function fetchUsers(): Promise<User[]> {
 }
 
 export async function fetchItems(): Promise<LostFoundItem[]> {
-  const items = await getJson<ApiLostFoundItem[]>('/items')
+  const items = await getJson<ApiLostFoundItem[]>('/api/items')
   return items.map(toItem)
 }
 
 export async function fetchItemById(id: string): Promise<LostFoundItem> {
-  const item = await getJson<ApiLostFoundItem>(`/items/${id}`)
+  const item = await getJson<ApiLostFoundItem>(`/api/items/${id}`)
   return toItem(item)
 }
 
@@ -66,9 +68,9 @@ export async function fetchClaims(): Promise<Claim[]> {
 }
 
 export async function createClaim(claim: NewClaim): Promise<Claim> {
-  const saved = await fetch(`${API_URL}/claims`, {
+  const saved = await fetch(`${API_URL}/api/claims`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(claim),
   })
   if (!saved.ok) {
