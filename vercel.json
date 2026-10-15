@@ -3,7 +3,13 @@
   "services": {
     "gt-four-part-two-frontend": {
       "root": "GT-4/GT4-Part2",
-      "framework": "vite"
+      "framework": "vite",
+      "rewrites": [
+        {
+          "source": "/(.*)",
+          "destination": "/index.html"
+        }
+      ]
     },
     "gt-four-part-two-api": {
       "root": "GT-4/GT4-Part2/backend",
