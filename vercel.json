@@ -13,7 +13,8 @@
     },
     "gt-four-part-two-api": {
       "root": "GT-4/GT4-Part2/backend",
-      "framework": "express"
+      "framework": "express",
+      "entrypoint": "dist/app.mjs"
     }
   },
   "rewrites": [
