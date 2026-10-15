@@ -8,7 +8,7 @@ import { connectDB } from './config/db.js'
 import { authRouter } from './routes/auth.js'
 import { itemRouter } from './routes/items.js'
 
-export const app = express()
+const app = express()
 
 app.use(express.json())
 

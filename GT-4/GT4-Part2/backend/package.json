@@ -1,8 +1,8 @@
 {
-  "name": "gt4-part1-backend",
+  "name": "gt4-part2-backend",
   "private": true,
   "version": "1.0.0",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",

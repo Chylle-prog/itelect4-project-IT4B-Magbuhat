@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { setServers } from 'node:dns'
-import { app } from './app.js'
+import app from './app.js'
 import { connectDB } from './config/db.js'
 
 const dnsServers = process.env.DNS_SERVERS?.split(',').map((server) => server.trim()).filter(Boolean)
