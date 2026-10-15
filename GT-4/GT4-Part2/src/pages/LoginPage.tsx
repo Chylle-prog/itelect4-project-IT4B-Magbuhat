@@ -23,7 +23,7 @@ function LoginPage() {
     try {
       const result = await loginWithEmailPassword(email.trim(), password)
       saveLogin(result.token, result.user.name)
-      navigate('/claims')
+      navigate('/')
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : 'Could not log in.')
     } finally {
@@ -37,10 +37,10 @@ function LoginPage() {
         <p>You are already logged in.</p>
         <Button
           type="button"
-          onClick={() => navigate('/claims')}
+          onClick={() => navigate('/')}
           className="bg-emerald-600 hover:bg-emerald-700"
         >
-          Go to Claims Queue
+          Go to Dashboard
         </Button>
       </section>
     )
