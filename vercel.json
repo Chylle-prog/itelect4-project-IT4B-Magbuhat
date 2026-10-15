@@ -14,6 +14,7 @@
     "gt-four-part-two-api": {
       "root": "GT-4/GT4-Part2/backend",
       "framework": "express",
+      "installCommand": "npm install",
       "entrypoint": "src/app.ts"
     }
   },
