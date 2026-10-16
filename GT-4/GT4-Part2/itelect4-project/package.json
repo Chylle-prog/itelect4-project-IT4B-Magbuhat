@@ -1,11 +1,10 @@
 {
-  "name": "gt2",
+  "name": "itelect4-project",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "api": "json-server db.json --port 3001",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
@@ -18,7 +17,6 @@
     "@tanstack/react-query": "^5.101.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "json-server": "^1.0.0-beta.15",
     "lucide-react": "^1.35.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

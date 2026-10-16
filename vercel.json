@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "services": {
     "gt-four-part-two-frontend": {
-      "root": "GT-4/GT4-Part2",
+      "root": "GT-4/GT4-Part2/itelect4-project",
       "framework": "vite",
       "rewrites": [
         {
@@ -12,7 +12,7 @@
       ]
     },
     "gt-four-part-two-api": {
-      "root": "GT-4/GT4-Part2/backend",
+      "root": "GT-4/GT4-Part2/itelect4-backend",
       "framework": "express",
       "entrypoint": "src/app.ts",
       "outputDirectory": "."
