@@ -1,0 +1,8 @@
+[submodule "GT-5/GT5-Part1/itelect4-backend"]
+	path = GT-5/GT5-Part1/itelect4-backend
+	url = https://github.com/Chylle-prog/itelect4-backend.git
+	branch = gt5-ai
+[submodule "GT-5/GT5-Part1/itelect4-project"]
+	path = GT-5/GT5-Part1/itelect4-project
+	url = https://github.com/Chylle-prog/itelect4-project.git
+	branch = gt5-ai
